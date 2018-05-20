@@ -7,6 +7,6 @@ namespace Reactive.AzureStorage.Table
 {
     public interface ICommunicator
     {
-        IObservable<T> Read<T>(string tableName, string partitionKey, string rowKey) where T : ITableEntity
+        IObservable<T> Read<T>(string tableName, string partitionKey, string rowKey) where T : ITableEntity;
     }
 }
