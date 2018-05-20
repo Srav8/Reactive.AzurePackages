@@ -30,11 +30,16 @@ namespace Reactive.AzureStorage.Table
                 () => new CloudStorageAccount(storageCredentials, true).CreateCloudTableClient(),true);
         }
 
+        public string StorageAccountName { get => _storageAccountName; }
+
+        public string StorageAccountKey { get => _storageAccountKey; }
+
         public IObservable<T> Read<T>(string tableName, string partitionKey, string rowKey) where T: ITableEntity =>
             GetCloudTableAsync(tableName)
                         .Select(tble => (tble, TableOperation.Retrieve<DynamicTableEntity>(partitionKey, rowKey)))
                         .SelectMany(tple => tple.tble.ExecuteAsync(tple.Item2))
                         .Select(result => (T)result.Result);
+
 
         private IObservable<CloudTable> GetCloudTableAsync(string tableName) =>
             Observable
