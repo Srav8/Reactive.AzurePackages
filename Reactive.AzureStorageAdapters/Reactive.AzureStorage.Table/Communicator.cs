@@ -3,6 +3,7 @@ using Microsoft.WindowsAzure.Storage.Auth;
 using Microsoft.WindowsAzure.Storage.Table;
 using System;
 using System.Linq.Expressions;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 
@@ -24,8 +25,8 @@ namespace Reactive.AzureStorage.Table
 
             var storageCredentials = new StorageCredentials(StorageAccountName, StorageAccountKey);
 
-            _tableClient = new Lazy<CloudTableClient>(
-                () => new CloudStorageAccount(storageCredentials, true).CreateCloudTableClient(),true);
+            _tableClient = new Lazy<CloudTableClient>(() =>
+                 new CloudStorageAccount(storageCredentials, true).CreateCloudTableClient(),true);
         }
 
         public string StorageAccountName { get; }
@@ -38,10 +39,39 @@ namespace Reactive.AzureStorage.Table
                         .SelectMany(tple => tple.tble.ExecuteAsync(tple.Item2))
                         .Select(result => (T)result.Result);
 
-        public IObservable<T> Read<T>(string tableName, Expression<Func<ITableEntity, bool>> filter) where T: ITableEntity
+        public IObservable<T> ReadAsync<T>(string tableName, TableQuery tableQuery) where T: ITableEntity =>
+            Observable.Create<T>(async observer =>
+            {
+                await PopulateObserverWithTableDataAsync(GetCloudTable(tableName), tableQuery, null, observer);
+                return Disposable.Empty;
+            });
+
+        private async Task PopulateObserverWithTableDataAsync<T>(IObservable<CloudTable> cloudTable, TableQuery tableQuery, TableContinuationToken tableContineousToken,
+            IObserver<T> observer) where T : ITableEntity
         {
-            
-            return null;
+            try
+            {
+                do
+                {
+                    await cloudTable
+                            .SelectMany(ct => ct.ExecuteQuerySegmentedAsync(tableQuery, tableContineousToken))
+                            .Where(seg => seg != null)
+                            .Do(seg => tableContineousToken = seg.ContinuationToken)
+                            .Select(seg => seg.Results)
+                            .Where(res => res != null)
+                            .SelectMany(res => res)
+                            .Select(e => (ITableEntity)e)
+                            .Select(e => (T)e)
+                            .ForEachAsync(e => observer.OnNext(e));
+
+                } while (tableContineousToken != null);
+
+                observer.OnCompleted();
+            }
+            catch (Exception exception)
+            {
+                observer.OnError(exception);
+            }
         }
 
 
