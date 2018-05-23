@@ -3,6 +3,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Reactive.AzureStorage.Table.FunctionalTest
 {
+    public class SUT
+    {
+
+    }
+
     [TestClass]
     public class UnitTest1
     {
