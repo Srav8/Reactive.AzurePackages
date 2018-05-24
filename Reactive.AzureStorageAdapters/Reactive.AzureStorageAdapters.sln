@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27703.2000
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reactive.AzureTableStorage.Adapter", "Reactive.AzureTableStorage.Adapter\Reactive.AzureTableStorage.Adapter.csproj", "{A65496A0-9369-4C4B-9E0B-53CEC3005A6C}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Reactive.AzureStorage.Table", "Reactive.AzureStorage.Table\Reactive.AzureStorage.Table.csproj", "{73A41239-8FF3-406A-A781-29B296BCB5D9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reactive.AzureStorage.Table.FunctionalTest", "Reactive.AzureStorage.Table.FunctionalTest\Reactive.AzureStorage.Table.FunctionalTest.csproj", "{ECF715F2-12B6-491C-9629-D736C7DC3F66}"
@@ -15,10 +13,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{A65496A0-9369-4C4B-9E0B-53CEC3005A6C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A65496A0-9369-4C4B-9E0B-53CEC3005A6C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A65496A0-9369-4C4B-9E0B-53CEC3005A6C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A65496A0-9369-4C4B-9E0B-53CEC3005A6C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{73A41239-8FF3-406A-A781-29B296BCB5D9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{73A41239-8FF3-406A-A781-29B296BCB5D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{73A41239-8FF3-406A-A781-29B296BCB5D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
