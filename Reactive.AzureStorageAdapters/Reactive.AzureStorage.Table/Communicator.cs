@@ -27,7 +27,7 @@ namespace Reactive.AzureStorage.Table
             var storageCredentials = new StorageCredentials(StorageAccountName, StorageAccountKey);
 
             _tableClient = new Lazy<CloudTableClient>(() =>
-                 new CloudStorageAccount(storageCredentials, true).CreateCloudTableClient(),true);
+                 new CloudStorageAccount(storageCredentials, true).CreateCloudTableClient(), true);
         }
 
         public string StorageAccountName { get; }
@@ -36,14 +36,14 @@ namespace Reactive.AzureStorage.Table
 
         public int BatchSize { get; } = 100;
 
-        public IObservable<bool> CreateCloudTable(string tableName) => 
+        public IObservable<bool> CreateCloudTable(string tableName) =>
             Observable
                     .Return(_tableClient.Value.GetTableReference(tableName))
                     .SelectMany(tbRef => tbRef.CreateIfNotExistsAsync())
                     .FirstAsync();
 
-        public IObservable<TableResult> InsertOrReplace<T>(string tableName, T entity) where T: ITableEntity
-        { 
+        public IObservable<TableResult> InsertOrReplace<T>(string tableName, T entity) where T : ITableEntity
+        {
             return GetCloudTable(tableName)
                     .Select(ct => (ct, op: TableOperation.InsertOrReplace(entity)))
                     .SelectMany(tple => tple.ct.ExecuteAsync(tple.op))
@@ -58,66 +58,44 @@ namespace Reactive.AzureStorage.Table
                     .FirstAsync();
         }
 
-        public IObservable<TableResult> BatchInsertOrReplace<T>(string tableName, string partitionKey, T[] entities) where T: ITableEntity
-        {
-            var cloudTable = GetCloudTable(tableName).Repeat();
+        public IObservable<TableResult> BatchInsertOrReplace<T>(string tableName, string partitionKey, T[] entities) where T : TableEntity =>
+            BatchOperation(tableName, partitionKey, entities, (e, op) => op.InsertOrReplace(e));
 
-            return entities.ToObservable()
-                                    .Buffer(BatchSize)
-                                    .Select(batch => (batch, batchOp: new TableBatchOperation()))
-                                    .Do(tple => Array.ForEach(tple.batch.ToArray(), e => tple.batchOp.InsertOrReplace(e)))
-                                    .Select(tple => tple.batchOp)
-                                    .Zip(cloudTable, (op, ct) => ct.ExecuteBatchAsync(op))
-                                    .SelectMany(tsk => tsk)
-                                    .SelectMany(results => results);
-        }
+        public IObservable<TableResult> BatchInsertOrMerge<T>(string tableName, string partitionKey, T[] entities) where T : TableEntity =>
+            BatchOperation(tableName, partitionKey, entities, (e, op) => op.InsertOrMerge(e));
 
-        public IObservable<TableResult> BatchInsertOrMerge<T>(string tableName, string partitionKey, T[] entities) where T : ITableEntity
-        {
-            //return BatchOperation(tableName, partitionKey, entities, (e, op) => op.InsertOrMerge(e));
-
-            var cloudTable = GetCloudTable(tableName).SingleAsync().Repeat();
-
-            return entities.ToObservable()
-                                    .Buffer(BatchSize)
-                                    .Select(batch => (batch, batchOp: new TableBatchOperation()))
-                                    .Do(tple => Array.ForEach(tple.batch.ToArray(), e => tple.batchOp.InsertOrMerge(e)))
-                                    .Select(tple => tple.batchOp)
-                                    .Zip(cloudTable, (op, ct) => ct.ExecuteBatchAsync(op))
-                                    .SelectMany(tsk => tsk)
-                                    .SelectMany(results => results);
-        }
-
-        private IObservable<TableResult> BatchOperation<T>(string tableName, string partitionKey, T[] entities, Action<T, TableBatchOperation> action) 
-            where T : ITableEntity
+        private IObservable<TableResult> BatchOperation<T>(string tableName, string partitionKey, T[] entities, Action<T, TableBatchOperation> action)
+            where T : TableEntity
         {
             var cloudTable = GetCloudTable(tableName).SingleAsync().Repeat();
 
             return entities.ToObservable()
                                     .Buffer(BatchSize)
                                     .Select(batch => (batch, batchOp: new TableBatchOperation()))
-                                    .Do(tple => Array.ForEach(tple.batch.ToArray(), e => action(e,tple.batchOp)))
+                                    .Do(tple => Array.ForEach(tple.batch.ToArray(), e => action(e, tple.batchOp)))
                                     .Select(tple => tple.batchOp)
                                     .Zip(cloudTable, (op, ct) => ct.ExecuteBatchAsync(op))
                                     .SelectMany(tsk => tsk)
                                     .SelectMany(results => results);
         }
 
-        public IObservable<T> Read<T>(string tableName, string partitionKey, string rowKey) where T: ITableEntity =>
+        public IObservable<T> ReadAsync<T>(string tableName, string partitionKey, string rowKey) where T : ITableEntity =>
             GetCloudTable(tableName)
                         .Select(tble => (tble, TableOperation.Retrieve<ITableEntity>(partitionKey, rowKey)))
                         .SelectMany(tple => tple.tble.ExecuteAsync(tple.Item2))
                         .Select(result => (T)result.Result);
 
-        public IObservable<T> ReadAsync<T>(string tableName, TableQuery tableQuery) where T: ITableEntity =>
-            Observable.Create<T>(async observer =>
-            {
-                await PopulateObserverWithTableDataAsync(GetCloudTable(tableName), tableQuery, null, observer);
-                return Disposable.Empty;
-            });
+        public IObservable<T> ReadAsync<T>(string tableName, TableQuery<T> tableQuery) where T : TableEntity, new()
+        {
+            return Observable.Create<T>(async observer =>
+                    {
+                        await PopulateObserverWithTableDataAsync(GetCloudTable(tableName), tableQuery, null, observer);
+                        return Disposable.Empty;
+                    });
+        }
 
-        private async Task PopulateObserverWithTableDataAsync<T>(IObservable<CloudTable> cloudTable, TableQuery tableQuery, TableContinuationToken tableContineousToken,
-            IObserver<T> observer) where T : ITableEntity
+        private async Task PopulateObserverWithTableDataAsync<T>(IObservable<CloudTable> cloudTable, TableQuery<T> tableQuery, TableContinuationToken tableContineousToken,
+            IObserver<T> observer) where T : TableEntity, new()
         {
             try
             {
