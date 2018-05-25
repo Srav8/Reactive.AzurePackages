@@ -1,16 +1,16 @@
-﻿using Microsoft.WindowsAzure.Storage;
+﻿
+using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Auth;
 using Microsoft.WindowsAzure.Storage.Table;
 using System;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 
 namespace Reactive.AzureStorage.Table
 {
-    public class Communicator
+    public class Communicator : ICommunicator
     {
         private readonly Lazy<CloudTableClient> _tableClient;
 
@@ -36,38 +36,40 @@ namespace Reactive.AzureStorage.Table
 
         public int BatchSize { get; } = 100;
 
-        public IObservable<bool> CreateCloudTable(string tableName) =>
-            Observable
+        public IObservable<bool> CreateCloudTableAsync(string tableName)
+        { 
+            return Observable
                     .Return(_tableClient.Value.GetTableReference(tableName))
                     .SelectMany(tbRef => tbRef.CreateIfNotExistsAsync())
                     .FirstAsync();
+        }
 
-        public IObservable<TableResult> InsertOrReplace<T>(string tableName, T entity) where T : ITableEntity
+        public IObservable<TableResult> InsertOrReplaceAsync<T>(string tableName, T entity) where T : TableEntity
         {
-            return GetCloudTable(tableName)
+            return GetCloudTableAsync(tableName)
                     .Select(ct => (ct, op: TableOperation.InsertOrReplace(entity)))
                     .SelectMany(tple => tple.ct.ExecuteAsync(tple.op))
                     .FirstAsync();
         }
 
-        public IObservable<TableResult> InsertOrMerge<T>(string tableName, T entity) where T : ITableEntity
+        public IObservable<TableResult> InsertOrMergeAsync<T>(string tableName, T entity) where T : TableEntity
         {
-            return GetCloudTable(tableName)
+            return GetCloudTableAsync(tableName)
                     .Select(ct => (ct, op: TableOperation.InsertOrMerge(entity)))
                     .SelectMany(tple => tple.ct.ExecuteAsync(tple.op))
                     .FirstAsync();
         }
 
-        public IObservable<TableResult> BatchInsertOrReplace<T>(string tableName, string partitionKey, T[] entities) where T : TableEntity =>
-            BatchOperation(tableName, partitionKey, entities, (e, op) => op.InsertOrReplace(e));
+        public IObservable<TableResult> BatchInsertOrReplaceAsync<T>(string tableName, string partitionKey, T[] entities) where T : TableEntity =>
+            BatchOperationAsync(tableName, partitionKey, entities, (e, op) => op.InsertOrReplace(e));
 
-        public IObservable<TableResult> BatchInsertOrMerge<T>(string tableName, string partitionKey, T[] entities) where T : TableEntity =>
-            BatchOperation(tableName, partitionKey, entities, (e, op) => op.InsertOrMerge(e));
+        public IObservable<TableResult> BatchInsertOrMergeAsync<T>(string tableName, string partitionKey, T[] entities) where T : TableEntity =>
+            BatchOperationAsync(tableName, partitionKey, entities, (e, op) => op.InsertOrMerge(e));
 
-        private IObservable<TableResult> BatchOperation<T>(string tableName, string partitionKey, T[] entities, Action<T, TableBatchOperation> action)
+        private IObservable<TableResult> BatchOperationAsync<T>(string tableName, string partitionKey, T[] entities, Action<T, TableBatchOperation> action)
             where T : TableEntity
         {
-            var cloudTable = GetCloudTable(tableName).SingleAsync().Repeat();
+            var cloudTable = GetCloudTableAsync(tableName).SingleAsync().Repeat();
 
             return entities.ToObservable()
                                     .Buffer(BatchSize)
@@ -79,19 +81,28 @@ namespace Reactive.AzureStorage.Table
                                     .SelectMany(results => results);
         }
 
-        public IObservable<T> ReadAsync<T>(string tableName, string partitionKey, string rowKey) where T : ITableEntity =>
-            GetCloudTable(tableName)
-                        .Select(tble => (tble, TableOperation.Retrieve<ITableEntity>(partitionKey, rowKey)))
+        public IObservable<T> ReadAsync<T>(string tableName, string partitionKey, string rowKey) where T : TableEntity
+        { 
+            return GetCloudTableAsync(tableName)
+                        .Select(tble => (tble, TableOperation.Retrieve<TableEntity>(partitionKey, rowKey)))
                         .SelectMany(tple => tple.tble.ExecuteAsync(tple.Item2))
                         .Select(result => (T)result.Result);
+        }
 
         public IObservable<T> ReadAsync<T>(string tableName, TableQuery<T> tableQuery) where T : TableEntity, new()
         {
             return Observable.Create<T>(async observer =>
                     {
-                        await PopulateObserverWithTableDataAsync(GetCloudTable(tableName), tableQuery, null, observer);
+                        await PopulateObserverWithTableDataAsync(GetCloudTableAsync(tableName), tableQuery, null, observer);
                         return Disposable.Empty;
                     });
+        }
+
+        public IObservable<TableResult> DeleteAsync<T>(string tableName, T entity) where T: TableEntity
+        {
+            return GetCloudTableAsync(tableName)
+                    .Select(tble => (tble, op: TableOperation.Delete(entity)))
+                    .SelectMany(tple => tple.tble.ExecuteAsync(tple.op));
         }
 
         private async Task PopulateObserverWithTableDataAsync<T>(IObservable<CloudTable> cloudTable, TableQuery<T> tableQuery, TableContinuationToken tableContineousToken,
@@ -108,7 +119,7 @@ namespace Reactive.AzureStorage.Table
                             .Select(seg => seg.Results)
                             .Where(res => res != null)
                             .SelectMany(res => res)
-                            .Select(e => (ITableEntity)e)
+                            .Select(e => (TableEntity)e)
                             .Select(e => (T)e)
                             .ForEachAsync(e => observer.OnNext(e));
 
@@ -122,7 +133,7 @@ namespace Reactive.AzureStorage.Table
             }
         }
 
-        private IObservable<CloudTable> GetCloudTable(string tableName)
+        private IObservable<CloudTable> GetCloudTableAsync(string tableName)
         {
             return Observable
                     .Return(_tableClient.Value.GetTableReference(tableName))
