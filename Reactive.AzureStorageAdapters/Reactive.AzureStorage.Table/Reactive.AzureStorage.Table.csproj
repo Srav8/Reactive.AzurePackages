@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <Description>An observable API wrapper to"Microsoft.WindowsAzure.Storage.Table" complying to all the constraints enforced by WindowsAzure sdk</Description>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
