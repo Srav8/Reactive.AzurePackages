@@ -1,13 +1,9 @@
-﻿using System;
+﻿
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Reactive;
-using System.Reactive.Concurrency;
 using System.Reactive.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
 
 namespace Reactive.AzureStorage.Table.FunctionalTest
@@ -40,11 +36,13 @@ namespace Reactive.AzureStorage.Table.FunctionalTest
         public string LastName { get; set; }
     }
 
+
     [TestClass]
     public class CommunicatorTest
     {
-        private readonly string _accountName = "storageaccount70532";
-        private readonly string _accountKey = "GmK+dnkyIHVujD1ZRmVq7RQLyZI+WZJn3SV8dx7P8OiHT0KatB2CJ7ee8ypHDclvrh7t9mzNF2/sqqJ8ibz4dA==";
+
+        private readonly string _accountName = "";
+        private readonly string _accountKey = "";
 
         public CustomerEntity[] GetEntities(string partitionKey)
         {
@@ -91,7 +89,21 @@ namespace Reactive.AzureStorage.Table.FunctionalTest
         }
 
         [TestMethod]
-        public async Task Read()
+        public async Task ReadIndividualEntityTest()
+        {
+            var entity = new Customer() { CustomerId = 100, FirstName = "Sam", LastName = "mas" };
+            var communicator = new Communicator(_accountName, _accountKey);
+
+            var tableEntity = entity.ToDynamicTableEntity("Washington", "Redmond");
+            await communicator.InsertOrReplaceAsync("USA", tableEntity).FirstOrDefaultAsync();
+
+            var result = await communicator.ReadAsync<DynamicTableEntity>("USA", "Washington", "Redmond");
+
+            var customer = result.ToEntity<Customer>();
+        }
+
+        [TestMethod]
+        public async Task BulkReadTest()
         {
             var communicator = new Communicator(_accountName, _accountKey);
             var tableQuery = new TableQuery<CustomerEntity>()
