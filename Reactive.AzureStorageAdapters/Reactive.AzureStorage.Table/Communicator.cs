@@ -3,6 +3,7 @@ using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Auth;
 using Microsoft.WindowsAzure.Storage.Table;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
@@ -10,6 +11,9 @@ using System.Threading.Tasks;
 
 namespace Reactive.AzureStorage.Table
 {
+    /// <summary>
+    /// An observable API to "Microsoft.WindowsAzure.Storage.Table"
+    /// </summary>
     public class Communicator : ICommunicator
     {
         private readonly Lazy<CloudTableClient> _tableClient;
@@ -34,8 +38,6 @@ namespace Reactive.AzureStorage.Table
 
         public string StorageAccountKey { get; }
 
-        public int BatchSize { get; } = 100;
-
         public IObservable<bool> CreateCloudTableAsync(string tableName)
         { 
             return Observable
@@ -50,6 +52,26 @@ namespace Reactive.AzureStorage.Table
                     .Select(ct => (ct, op: TableOperation.InsertOrReplace(entity)))
                     .SelectMany(tple => tple.ct.ExecuteAsync(tple.op))
                     .FirstAsync();
+        }
+
+        public IObservable<TableResult> InsertOrReplaceAsync<T>(IEnumerable<T> entities, string tableName) where T : ITableEntity =>
+            InsertOrReplaceAsync(entities.ToObservable(), tableName);
+
+        public IObservable<TableResult> InsertOrReplaceAsync<T>(IObservable<T> entities, string tableName) where T : ITableEntity
+        {
+            return entities
+                    .Zip(GetCloudTableAsync(tableName).Repeat(), (e, ct) => (ct, op: TableOperation.InsertOrReplace(e)))
+                    .SelectMany(tple => tple.ct.ExecuteAsync(tple.op));
+        }
+
+        public IObservable<TableResult> InsertOrMergeAsync<T>(IEnumerable<T> entities, string tableName) where T : ITableEntity =>
+            InsertOrMergeAsync(entities.ToObservable(), tableName);
+
+        public IObservable<TableResult> InsertOrMergeAsync<T>(IObservable<T> entities, string tableName) where T : ITableEntity
+        {
+            return entities
+                    .Zip(GetCloudTableAsync(tableName).Repeat(), (e, ct) => (ct, op: TableOperation.InsertOrMerge(e)))
+                    .SelectMany(tple => tple.ct.ExecuteAsync(tple.op));
         }
 
         public IObservable<TableResult> InsertOrMergeAsync<T>(string tableName, T entity) where T : ITableEntity
@@ -67,29 +89,28 @@ namespace Reactive.AzureStorage.Table
                     .SelectMany(tple => tple.tble.ExecuteAsync(tple.op));
         }
 
-        public IObservable<TableResult> BatchInsertOrReplaceAsync<T>(string tableName, string partitionKey, T[] entities) where T : ITableEntity =>
-            BatchOperationAsync(tableName, partitionKey, entities, (e, op) => op.InsertOrReplace(e));
+        public IObservable<TableResult> TableBatchOperationAsync<T>(string tableName, T[] entities, Action<T, TableBatchOperation> action)
+            where T : ITableEntity => BatchOperationAsync(tableName, entities, action);
 
-        public IObservable<TableResult> BatchInsertOrMergeAsync<T>(string tableName, string partitionKey, T[] entities) where T : ITableEntity =>
-            BatchOperationAsync(tableName, partitionKey, entities, (e, op) => op.InsertOrMerge(e));
+        public IObservable<TableResult> BatchInsertOrReplaceAsync<T>(string tableName,  T[] entities) where T : ITableEntity =>
+            BatchOperationAsync(tableName,  entities, (e, op) => op.InsertOrReplace(e));
 
-        public IObservable<TableResult> BatchDeleteAsync<T>(string tableName, string partitionKey, T[] entities) where T : ITableEntity =>
-            BatchOperationAsync(tableName, partitionKey, entities, (e, op) => op.Delete(e));
+        public IObservable<TableResult> BatchInsertOrMergeAsync<T>(string tableName,  T[] entities) where T : ITableEntity =>
+            BatchOperationAsync(tableName,  entities, (e, op) => op.InsertOrMerge(e));
+
+        public IObservable<TableResult> BatchDeleteAsync<T>(string tableName,  T[] entities) where T : ITableEntity =>
+            BatchOperationAsync(tableName,  entities, (e, op) => op.Delete(e));
 
 
-        private IObservable<TableResult> BatchOperationAsync<T>(string tableName, string partitionKey, T[] entities, Action<T, TableBatchOperation> action)
+        private IObservable<TableResult> BatchOperationAsync<T>(string tableName, T[] entities, Action<T, TableBatchOperation> action)
             where T : ITableEntity
         {
-            var cloudTable = GetCloudTableAsync(tableName).SingleAsync().Repeat();
-
-            return entities.ToObservable()
-                                    .Buffer(BatchSize)
-                                    .Select(batch => (batch, batchOp: new TableBatchOperation()))
-                                    .Do(tple => Array.ForEach(tple.batch.ToArray(), e => action(e, tple.batchOp)))
-                                    .Select(tple => tple.batchOp)
-                                    .Zip(cloudTable, (op, ct) => ct.ExecuteBatchAsync(op))
-                                    .SelectMany(tsk => tsk)
-                                    .SelectMany(results => results);
+            return Observable
+                            .Return(new TableBatchOperation())
+                            .Do(op => Array.ForEach(entities, e => action(e,op)))
+                            .Zip(GetCloudTableAsync(tableName), (op, ct) => ct.ExecuteBatchAsync(op))
+                            .SelectMany(tsk => tsk)
+                            .SelectMany(results => results);
         }
 
         public IObservable<T> ReadAsync<T>(string tableName, string partitionKey, string rowKey) where T : ITableEntity

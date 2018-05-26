@@ -1,6 +1,7 @@
 ﻿
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -40,26 +41,8 @@ namespace Reactive.AzureStorage.Table.FunctionalTest
     [TestClass]
     public class CommunicatorTest
     {
-
-        private readonly string _accountName = "";
-        private readonly string _accountKey = "";
-
-        public CustomerEntity[] GetEntities(string partitionKey)
-        {
-            var entities = new List<CustomerEntity>();
-
-            for(int i = 1; i<=2500; i++)
-            {
-                entities.Add(new CustomerEntity(partitionKey, "RowKey_" + i.ToString())
-                {
-                    CustomerId = i,
-                    FirstName = "FName_" + i.ToString(),
-                    LastName = "LName_" + i.ToString()
-                });
-            }
-
-            return entities.ToArray();
-        }
+        private readonly string _accountName = "storageaccount70532";
+        private readonly string _accountKey = "xBzXDAstbB+LbkzsZbUhFsGxNu9VHmpqmRF6JzqoX1I1lP1pOHjU5MvXPNFHEIcYBmGOQxjbtk2oxGBFWKIC4Q==";
 
         [TestMethod]
         public async Task InsertOrReplaceTest()
@@ -71,21 +54,39 @@ namespace Reactive.AzureStorage.Table.FunctionalTest
         }
 
         [TestMethod]
-        public async Task BatchInsertOrReplace()
+        public async Task InsertOrReplaceObservableTest()
+        {
+            var communicator = new Communicator(_accountName, _accountKey);
+            var entity = new CustomerEntity("Washington", "Redmond") { CustomerId = 100, FirstName = "Sam", LastName = "mas" };
+
+            var result = await communicator.InsertOrReplaceAsync(Observable.Return(entity), "USA").FirstOrDefaultAsync();
+        }
+
+        [TestMethod]
+        public async Task BatchInsertOrReplaceTest()
         {
             var communicator = new Communicator(_accountName, _accountKey);
             var entities = GetEntities("Partition_1");
 
-            var results = await communicator.BatchInsertOrReplaceAsync("USA", "Partition_1", entities).ToArray();
+            var results = await entities
+                                    .ToObservable()
+                                    .Buffer(100)
+                                    .SelectMany(ets => communicator.BatchInsertOrReplaceAsync("USA", ets.ToArray()))
+                                    .ToArray();
         }
 
         [TestMethod]
-        public async Task BatchInsertOrMerge()
+        public async Task BatchInsertOrMergeTest()
         {
             var communicator = new Communicator(_accountName, _accountKey);
             var entities = GetEntities("Partition_2");
 
-            var results = await communicator.BatchInsertOrMergeAsync("USA", "Partition_2", entities).ToArray();
+            var results = await entities
+                                    .ToObservable()
+                                    .Buffer(100)
+                                    .SelectMany(ets => 
+                                        communicator.TableBatchOperationAsync("USA", ets.ToArray(),(e,op) => op.InsertOrMerge(e)))
+                                    .ToArray();
         }
 
         [TestMethod]
@@ -99,7 +100,7 @@ namespace Reactive.AzureStorage.Table.FunctionalTest
 
             var result = await communicator.ReadAsync<DynamicTableEntity>("USA", "Washington", "Redmond");
 
-            var customer = result.ToEntity<Customer>();
+            var customer = result.ToBusinessEntity<Customer>();
         }
 
         [TestMethod]
@@ -122,6 +123,23 @@ namespace Reactive.AzureStorage.Table.FunctionalTest
         {
             await Task.Delay(5);
             return new Customer { CustomerId = e.CustomerId, FirstName = e.FirstName, LastName = e.LastName };
+        }
+
+        private CustomerEntity[] GetEntities(string partitionKey)
+        {
+            var entities = new List<CustomerEntity>();
+
+            for (int i = 1; i <= 2500; i++)
+            {
+                entities.Add(new CustomerEntity(partitionKey, "RowKey_" + i.ToString())
+                {
+                    CustomerId = i,
+                    FirstName = "FName_" + i.ToString(),
+                    LastName = "LName_" + i.ToString()
+                });
+            }
+
+            return entities.ToArray();
         }
     }
 }

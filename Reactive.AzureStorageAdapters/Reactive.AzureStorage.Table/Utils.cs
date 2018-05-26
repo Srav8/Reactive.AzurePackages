@@ -12,7 +12,7 @@ namespace Reactive.AzureStorage.Table
             return new DynamicTableEntity(partitionKey, rowKey, null, props);            
         }
 
-        public static T ToEntity<T>(this DynamicTableEntity dynamicTableEntity) =>
+        public static T ToBusinessEntity<T>(this DynamicTableEntity dynamicTableEntity) =>
             TableEntity.ConvertBack<T>(dynamicTableEntity.Properties, new OperationContext());
     }
 }
