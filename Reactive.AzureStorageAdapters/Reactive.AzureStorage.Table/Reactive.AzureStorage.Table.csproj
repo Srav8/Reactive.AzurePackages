@@ -2,7 +2,12 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Description>An observable API wrapper to"Microsoft.WindowsAzure.Storage.Table" complying to all the constraints enforced by WindowsAzure sdk</Description>
+    <Description>An observable API wrapper to"Microsoft.WindowsAzure.Storage.Table" sdk, enforcing all the sdk constraints</Description>
+    <Authors>Saravanan Ponnan Venkatachalam</Authors>
+    <PackageProjectUrl>https://github.com/Srav8/Reactive.AzurePackages/tree/master/Reactive.AzureStorageAdapters</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Srav8/Reactive.AzurePackages/tree/master/Reactive.AzureStorageAdapters</RepositoryUrl>
+    <PackageTags>Rx Reactive Azure Storage WindowsStorage Table</PackageTags>
+    <Company />
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">

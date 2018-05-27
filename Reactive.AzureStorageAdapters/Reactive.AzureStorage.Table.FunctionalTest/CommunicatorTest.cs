@@ -1,4 +1,5 @@
 ﻿
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -111,17 +112,30 @@ namespace Reactive.AzureStorage.Table.FunctionalTest
                                     .Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.GreaterThan, "Partition"));
             var timer = new Stopwatch();
             timer.Start();
-            var results = await communicator.ReadAsync("USA", tableQuery)
-                                        .SelectMany(e => GetCustomer(e))
-                                        .ToArray();
+            var results = await communicator.ReadAsync("USA", tableQuery) // Process the table operation continuously on a separate thread
+                                .SelectMany(e => GetCustomer(e)) // Process the intermediate results on a separate thread soon after it becomes available
+                                .ToArray();
             timer.Stop();
 
             var elapsedTime = timer.ElapsedMilliseconds;
         }
 
+        public async Task Delete()
+        {
+            var communicator = new Communicator(_accountName, _accountKey);
+            var tableQuery = new TableQuery<CustomerEntity>()
+                                    .Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.GreaterThan, "DateRange"));
+
+            var results = await communicator.ReadAsync("USA", tableQuery)
+                                            .Buffer(100)
+                                            .SelectMany(ets => communicator.BatchDeleteAsync("Table", ets.ToArray()))
+                                            .ToArray();
+        }
+
+
         private async Task<Customer> GetCustomer(CustomerEntity e)
         {
-            await Task.Delay(5);
+            await Task.Delay(5); // simulated delay
             return new Customer { CustomerId = e.CustomerId, FirstName = e.FirstName, LastName = e.LastName };
         }
 
