@@ -50,21 +50,22 @@ public IObservable<Customer> GetGoldCustomers()
 {
     var communicator = new Communicator(_accountName, _accountKey);
     var tableQuery = new TableQuery<CustomerEntity>()
-                            .Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.GreaterThan, "Partition"));
+                            .Where(TableQuery
+                                .GenerateFilterCondition("PartitionKey", QueryComparisons.GreaterThan, "Partition"));
 
     return communicator.ReadAsync("USA", tableQuery)
                         .SelectMany(e => GetCustomer(e))
-                        .SelectMany(c => IsValidCustomerService(c))
+                        .SelectMany(c => IsValidCustomer(c))
                         .Where(tple => tple.Item2 == true)
-                        .SelectMany(tple => IsGold(tple.Item1))
+                        .SelectMany(tple => IsGoldCustomer(tple.Item1))
                         .Where(tple => tple.Item2 == true)
                         .Select(tple => tple.Item1);
 }
 
-private async Task<(Customer,bool)> IsValidCustomerService(Customer c) => 
+private async Task<(Customer,bool)> IsValidCustomer(Customer c) => 
     await Task.Delay(5).ContinueWith(_ => (c,true));
 
-private async Task<(Customer, bool)> IsGold(Customer c) => 
+private async Task<(Customer, bool)> IsGoldCustomer(Customer c) => 
     await Task.Delay(5).ContinueWith(_ => (c, true));
 ```
 
@@ -75,20 +76,21 @@ public async Task Delete()
     var communicator = new Communicator(_accountName, _accountKey);
     var tableQuery = new TableQuery<CustomerEntity>()
                             .Where(TableQuery
-                                    .GenerateFilterCondition("PartitionKey", QueryComparisons.GreaterThan, "DateRange"));
+                                .GenerateFilterCondition("PartitionKey", QueryComparisons.GreaterThan, "DateRange"));
 
-    var results = await communicator.ReadAsync("USA", tableQuery)
-                                    .Buffer(100)
-                                    .SelectMany(ets => communicator.BatchDeleteAsync("Table", ets.ToArray()))
-                                    .ToArray();
+    var results = await communicator
+                            .ReadAsync("USA", tableQuery)
+                            .Buffer(100)
+                            .SelectMany(ets => communicator.BatchDeleteAsync("Table", ets.ToArray()))
+                            .ToArray();
 }
 ```
 Important Points
 ----------------
-    As this is considered as the tight skin on top of the `WindowsAzure.Storage` sdk, 
-    it doesn't take additional responsibilities on input data. It is a pass through 
-    layer and provides reactive api to the caller. Additional customized layers can be 
-    added as decorators to this.
+As this is considered as the tight skin on top of the `WindowsAzure.Storage` sdk, 
+it doesn't take additional responsibilities on input data. It is a pass through 
+layer and provides reactive api to the caller. Additional customized layers can be 
+added as decorators to this.
 
 * Validation of parameters like null or empty table name are delegated to sdk
 * Validation of common partition key and batch size of 100 is delegated to sdk. 
