@@ -34,7 +34,8 @@ public async Task BulkReadTest()
     var results = await communicator
                             // Processes the table operation continuously on a separate thread
                             .ReadAsync("USA", tableQuery) 
-                            // Processes the intermediate results on a separate thread soon after it becomes available
+                            // Processes the intermediate results on a separate thread soon 
+                            // after it becomes available
                             .SelectMany(e => GetCustomer(e)) 
                             .ToArray();
 }
