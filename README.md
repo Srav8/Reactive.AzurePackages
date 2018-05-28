@@ -53,7 +53,7 @@ public IObservable<Customer> GetGoldCustomers()
     var communicator = new Communicator(_accountName, _accountKey);
     var tableQuery = new TableQuery<CustomerEntity>()
                           .Where(TableQuery
-                           .GenerateFilterCondition("PartitionKey", QueryComparisons.GreaterThan, "Partition"));
+                           .GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, "Partition"));
 
     return communicator.ReadAsync("USA", tableQuery)
                         .SelectMany(e => GetCustomer(e))
