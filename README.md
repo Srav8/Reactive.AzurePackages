@@ -28,7 +28,8 @@ public async Task BulkReadTest()
 {
     var communicator = new Communicator(_accountName, _accountKey);
     var tableQuery = new TableQuery<CustomerEntity>()
-                            .Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.GreaterThan, "Partition"));
+                          .Where(TableQuery
+                           .GenerateFilterCondition("PartitionKey", QueryComparisons.GreaterThan, "Partition"));
 
     var results = await communicator
                             // Processes the table operation continuously on a separate thread
@@ -50,8 +51,8 @@ public IObservable<Customer> GetGoldCustomers()
 {
     var communicator = new Communicator(_accountName, _accountKey);
     var tableQuery = new TableQuery<CustomerEntity>()
-                            .Where(TableQuery
-                                .GenerateFilterCondition("PartitionKey", QueryComparisons.GreaterThan, "Partition"));
+                          .Where(TableQuery
+                           .GenerateFilterCondition("PartitionKey", QueryComparisons.GreaterThan, "Partition"));
 
     return communicator.ReadAsync("USA", tableQuery)
                         .SelectMany(e => GetCustomer(e))
@@ -76,13 +77,13 @@ public async Task Delete()
     var communicator = new Communicator(_accountName, _accountKey);
     var tableQuery = new TableQuery<CustomerEntity>()
                             .Where(TableQuery
-                                .GenerateFilterCondition("PartitionKey", QueryComparisons.GreaterThan, "DateRange"));
+                             .GenerateFilterCondition("PartitionKey", QueryComparisons.GreaterThan, "DateRange"));
 
     var results = await communicator
-                            .ReadAsync("USA", tableQuery)
-                            .Buffer(100)
-                            .SelectMany(ets => communicator.BatchDeleteAsync("Table", ets.ToArray()))
-                            .ToArray();
+                         .ReadAsync("USA", tableQuery)
+                         .Buffer(100)
+                         .SelectMany(ets => communicator.BatchDeleteAsync("Table", ets.ToArray()))
+                         .ToArray();
 }
 ```
 Important Points
