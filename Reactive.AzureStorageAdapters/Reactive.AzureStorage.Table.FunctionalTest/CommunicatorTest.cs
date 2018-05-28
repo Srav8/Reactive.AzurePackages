@@ -42,8 +42,8 @@ namespace Reactive.AzureStorage.Table.FunctionalTest
     [TestClass]
     public class CommunicatorTest
     {
-        private readonly string _accountName = "";
-        private readonly string _accountKey = "";
+        private readonly string _accountName = "storageaccount70532";
+        private readonly string _accountKey = "XkPPPMYXd/6hGaQPlXkGgqaDhnsu18LIKu3xE/IlhL4OJaAkOUY+0vZm/Myeorx7HW0donbDCNj8yJT8J03fzQ==";
 
         [TestMethod]
         public async Task InsertOrReplaceTest()
