@@ -3,20 +3,21 @@
 ## Features
 ### Azure Storage
 #### Table
-    While working with azure storage, its throughput has to be taken into consideration and APIs need to be designed 
-    to enable and encourage better utilization of threads. The current throughput limitation on azure table storage 
-    is upto 2000 entities per second for single table partition with 1KiB entities 
-[AzureStorageScalabilityandPerformanceTargets][1]
+While working with azure storage, its throughput has to be taken into consideration and APIs need to be designed 
+to enable and encourage better utilization of threads. The current throughput limitation on azure table storage 
+is upto 2000 entities per second for single table partition with 1KiB entities 
+[AzureStorageScalabilityandPerformanceTargets][1]. 
 
-    This will further be affected by the partitioning node server distribution, network bandwidth, message size and 
-    the table query. All these factors results into non deterministic nature of the table operation and the timeline. 
-    Azure provides an indicator/tracking pointer on the table operation as continuous-token along with intermediate 
-    results. As long as it is having a  valid pointer (from where next operation - say a 'read' begins), the operation 
-    is not yet completed. With this approach, the operation results will be provided as packets/chunks over a period 
-    of time. As the each chunk requires a network round trip and should move linearly on the line connected by the 
-    token pointers, processing a chunk soon after it arrives improves performance and uses CPU cores optimally. 
-    Providing table-operation-result chunks as reactive stream will build the scaffolding structure for smooth 
-    construction of the processing pipeline. 
+This will further be affected by the partitioning node server distribution, network bandwidth, message size and 
+the table query. All these factors results into non deterministic nature of the table operation and the timeline.
+    
+Azure provides an indicator/tracking pointer on the table operation as continuous-token along with intermediate 
+results. As long as it is having a  valid pointer (from where next operation - say a 'read' begins), the operation 
+is not yet completed. With this approach, the operation results will be provided as packets/chunks over a period 
+of time. As the each chunk requires a network round trip and should move linearly on the line connected by the 
+token pointers, processing a chunk soon after it arrives improves performance and uses CPU cores optimally. 
+Providing table-operation-result chunks as reactive stream will build the scaffolding structure for smooth 
+construction of the processing pipeline. 
 
 [1]: https://docs.microsoft.com/en-us/azure/storage/common/storage-scalability-targets
 
@@ -88,7 +89,7 @@ Important Points
     it doesn't take additional responsibilities on input data. It is a pass through 
     layer and provides reactive api to the caller. Additional customized layers can be 
     added as decorators to this.
-    
+
 * Validation of parameters like null or empty table name are delegated to sdk
 * Validation of common partition key and batch size of 100 is delegated to sdk. 
 * Utilities are provided to serialize and deserialzie business entities to/from table 
