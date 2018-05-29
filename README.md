@@ -1,5 +1,5 @@
 # Reactive.AzurePackages
-        Reactive api wrapper around azure sdk based programming.
+        A reactive interface for Azure storage SDK - a natural programming model for asynchronous data streams.
 ## Features
 ### Azure Storage
 #### Table
