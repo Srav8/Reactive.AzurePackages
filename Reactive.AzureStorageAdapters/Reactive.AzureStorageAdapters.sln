@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Reactive.AzureStorage.Table
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reactive.AzureStorage.Table.FunctionalTest", "Reactive.AzureStorage.Table.FunctionalTest\Reactive.AzureStorage.Table.FunctionalTest.csproj", "{ECF715F2-12B6-491C-9629-D736C7DC3F66}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reactive.AzureStorage.Queue", "Reactive.AzureStorage.Queue\Reactive.AzureStorage.Queue.csproj", "{013A476B-6D2A-425B-BB48-D1FACB9AE975}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{ECF715F2-12B6-491C-9629-D736C7DC3F66}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ECF715F2-12B6-491C-9629-D736C7DC3F66}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ECF715F2-12B6-491C-9629-D736C7DC3F66}.Release|Any CPU.Build.0 = Release|Any CPU
+		{013A476B-6D2A-425B-BB48-D1FACB9AE975}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{013A476B-6D2A-425B-BB48-D1FACB9AE975}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{013A476B-6D2A-425B-BB48-D1FACB9AE975}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{013A476B-6D2A-425B-BB48-D1FACB9AE975}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
