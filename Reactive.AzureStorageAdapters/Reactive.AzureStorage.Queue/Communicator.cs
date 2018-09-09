@@ -8,7 +8,7 @@ using System.Reactive.Linq;
 
 namespace Reactive.AzureStorage.Queue
 {
-    public class Communicator
+    public class Communicator : ICommunicator
     {
         private readonly Lazy<CloudQueueClient> _cloudQueueClient;
 
@@ -37,7 +37,7 @@ namespace Reactive.AzureStorage.Queue
             return GetQueueReferenceAsysnc(queueName)
                     .SelectMany(cq => Observable.FromAsync(() => cq.AddMessageAsync(cloudQueueMessage)));
         }
-
+        
         public IObservable<CloudQueueMessage> GetQueueMessageAsync(string queueName)
         {
             var queueReference = GetQueueReferenceAsysnc(queueName).Repeat();
@@ -46,7 +46,6 @@ namespace Reactive.AzureStorage.Queue
                 while(true)
                 {
                     var cloudQueueMessage = await queueReference
-                                                    //.TakeWhile(cq => cq.PeekMessageAsync().Result != null)
                                                     .SelectMany(qRef => qRef.GetMessageAsync())
                                                     .FirstOrDefaultAsync();
                     if (cloudQueueMessage != null)
