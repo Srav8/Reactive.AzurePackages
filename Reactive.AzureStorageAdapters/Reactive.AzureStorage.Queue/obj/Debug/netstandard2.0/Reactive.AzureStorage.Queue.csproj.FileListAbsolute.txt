@@ -1,0 +1,9 @@
+C:\Users\HarshaSrihari\source\repos\Reactive.AzurePackages\Reactive.AzureStorageAdapters\Reactive.AzureStorage.Queue\bin\Debug\netstandard2.0\Reactive.AzureStorage.Queue.deps.json
+C:\Users\HarshaSrihari\source\repos\Reactive.AzurePackages\Reactive.AzureStorageAdapters\Reactive.AzureStorage.Queue\bin\Debug\netstandard2.0\Reactive.AzureStorage.Queue.dll
+C:\Users\HarshaSrihari\source\repos\Reactive.AzurePackages\Reactive.AzureStorageAdapters\Reactive.AzureStorage.Queue\bin\Debug\netstandard2.0\Reactive.AzureStorage.Queue.pdb
+C:\Users\HarshaSrihari\source\repos\Reactive.AzurePackages\Reactive.AzureStorageAdapters\Reactive.AzureStorage.Queue\obj\Debug\netstandard2.0\Reactive.AzureStorage.Queue.csprojAssemblyReference.cache
+C:\Users\HarshaSrihari\source\repos\Reactive.AzurePackages\Reactive.AzureStorageAdapters\Reactive.AzureStorage.Queue\obj\Debug\netstandard2.0\Reactive.AzureStorage.Queue.csproj.CoreCompileInputs.cache
+C:\Users\HarshaSrihari\source\repos\Reactive.AzurePackages\Reactive.AzureStorageAdapters\Reactive.AzureStorage.Queue\obj\Debug\netstandard2.0\Reactive.AzureStorage.Queue.AssemblyInfoInputs.cache
+C:\Users\HarshaSrihari\source\repos\Reactive.AzurePackages\Reactive.AzureStorageAdapters\Reactive.AzureStorage.Queue\obj\Debug\netstandard2.0\Reactive.AzureStorage.Queue.AssemblyInfo.cs
+C:\Users\HarshaSrihari\source\repos\Reactive.AzurePackages\Reactive.AzureStorageAdapters\Reactive.AzureStorage.Queue\obj\Debug\netstandard2.0\Reactive.AzureStorage.Queue.dll
+C:\Users\HarshaSrihari\source\repos\Reactive.AzurePackages\Reactive.AzureStorageAdapters\Reactive.AzureStorage.Queue\obj\Debug\netstandard2.0\Reactive.AzureStorage.Queue.pdb

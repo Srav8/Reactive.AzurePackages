@@ -1,0 +1,9 @@
+C:\Users\HarshaSrihari\source\repos\Reactive.AzurePackages\Reactive.AzureStorageAdapters\Reactive.AzureStorage.Table\bin\Debug\netstandard2.0\Reactive.AzureStorage.Table.deps.json
+C:\Users\HarshaSrihari\source\repos\Reactive.AzurePackages\Reactive.AzureStorageAdapters\Reactive.AzureStorage.Table\bin\Debug\netstandard2.0\Reactive.AzureStorage.Table.dll
+C:\Users\HarshaSrihari\source\repos\Reactive.AzurePackages\Reactive.AzureStorageAdapters\Reactive.AzureStorage.Table\bin\Debug\netstandard2.0\Reactive.AzureStorage.Table.pdb
+C:\Users\HarshaSrihari\source\repos\Reactive.AzurePackages\Reactive.AzureStorageAdapters\Reactive.AzureStorage.Table\obj\Debug\netstandard2.0\Reactive.AzureStorage.Table.csproj.CoreCompileInputs.cache
+C:\Users\HarshaSrihari\source\repos\Reactive.AzurePackages\Reactive.AzureStorageAdapters\Reactive.AzureStorage.Table\obj\Debug\netstandard2.0\Reactive.AzureStorage.Table.AssemblyInfoInputs.cache
+C:\Users\HarshaSrihari\source\repos\Reactive.AzurePackages\Reactive.AzureStorageAdapters\Reactive.AzureStorage.Table\obj\Debug\netstandard2.0\Reactive.AzureStorage.Table.AssemblyInfo.cs
+C:\Users\HarshaSrihari\source\repos\Reactive.AzurePackages\Reactive.AzureStorageAdapters\Reactive.AzureStorage.Table\obj\Debug\netstandard2.0\Reactive.AzureStorage.Table.dll
+C:\Users\HarshaSrihari\source\repos\Reactive.AzurePackages\Reactive.AzureStorageAdapters\Reactive.AzureStorage.Table\obj\Debug\netstandard2.0\Reactive.AzureStorage.Table.pdb
+C:\Users\HarshaSrihari\source\repos\Reactive.AzurePackages\Reactive.AzureStorageAdapters\Reactive.AzureStorage.Table\obj\Debug\netstandard2.0\Reactive.AzureStorage.Table.csprojAssemblyReference.cache
