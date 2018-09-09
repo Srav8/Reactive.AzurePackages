@@ -60,6 +60,30 @@ namespace Reactive.AzureStorage.Queue
             });
         }
 
+        public IObservable<CloudQueueMessage[]> GetBatchQueueMesssagesAsync(string queueName, int numberOfMessages)
+        {
+            var queueReference = GetQueueReferenceAsysnc(queueName).Repeat();
+            return Observable.Create<CloudQueueMessage[]>(async observer =>
+            {
+                while (true)
+                {
+                    var cloudQueueMessages = await queueReference
+                                                    .SelectMany(qRef => qRef.GetMessagesAsync(numberOfMessages))
+                                                    .FirstOrDefaultAsync()
+                                                    .SelectMany(messages => messages)
+                                                    .ToArray();
+                    if(cloudQueueMessages != null)
+                        observer.OnNext(cloudQueueMessages);
+                    else
+                    {
+                        observer.OnCompleted();
+                        break;
+                    }
+                }
+                return Disposable.Empty;
+            });
+        }
+
         private IObservable<CloudQueue> GetQueueReferenceAsysnc(string queueName)
         {
             return Observable
